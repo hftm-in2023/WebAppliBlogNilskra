@@ -1,0 +1,51 @@
+.blog-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  padding: 2rem;
+  justify-content: center;
+  align-items: stretch;
+  background-color: #f5f7fa;
+}
+
+.blog-container article {
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 320px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease;
+  display: flex;
+  flex-direction: column;
+
+  &:hover {
+    transform: translateY(-4px);
+  }
+
+  h2 {
+    margin-top: 0;
+    font-size: 1.25rem;
+    color: #2c3e50;
+  }
+
+  p {
+    flex-grow: 1;
+    color: #555;
+  }
+
+  small {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: #888;
+  }
+
+  img {
+    width: 100%;
+    max-height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+  }
+}

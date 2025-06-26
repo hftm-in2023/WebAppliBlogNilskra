@@ -1,21 +1,19 @@
-<h1>Blog Übersicht</h1>
+<main class="main">
+  <mat-toolbar color="primary">
+    <button
+      mat-button
+      routerLink="/"
+      routerLinkActive="active-link"
+      [routerLinkActiveOptions]="{ exact: true }"
+    >
+      Blog
+    </button>
+    <button mat-button routerLink="/demo" routerLinkActive="active-link">
+      Demo
+    </button>
+  </mat-toolbar>
 
-@if (blogService.loading()) {
-<p>Lade Daten...</p>
-} @else {
-<div class="blog-container">
-  @for (blog of blogs; track blog.id) {
-  <article class="blog-entry">
-    <img [src]="
-                blog.headerImageUrl && blog.headerImageUrl !== 'string'
-                  ? blog.headerImageUrl
-                  : 'assets/images/platzhalter.png'
-              " alt="Header Image" />
-    <h2>{{ blog.title }}</h2>
-    <p>{{ blog.contentPreview }}</p>
-  </article>
-  } @empty {
-  <p>Keine Blogeinträge vorhanden.</p>
-  }
-</div>
-}
+  <div class="content">
+    <router-outlet></router-outlet>
+  </div>
+</main>
