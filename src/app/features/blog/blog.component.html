@@ -5,18 +5,21 @@
 } @else {
   <div class="blog-container">
     @for (blog of blogs; track blog.id) {
-      <article class="blog-entry">
-        <img
-          [src]="
-            blog.headerImageUrl && blog.headerImageUrl !== 'string'
-              ? blog.headerImageUrl
-              : 'assets/images/platzhalter.png'
-          "
-          alt="Header Image"
-        />
-        <h2>{{ blog.title }}</h2>
-        <p>{{ blog.contentPreview }}</p>
-      </article>
+      <a [routerLink]="['/detail', blog.id]">
+        <article class="blog-entry">
+          <img
+            [src]="
+              blog.headerImageUrl && blog.headerImageUrl !== 'string'
+                ? blog.headerImageUrl
+                : 'assets/images/platzhalter.png'
+            "
+            alt="Header Image"
+          />
+          <h2>{{ blog.title }}</h2>
+          <p>{{ blog.contentPreview }}</p>
+          <p>{{ blog.createdAt }}</p>
+        </article>
+      </a>
     } @empty {
       <p>Keine Blogeinträge vorhanden.</p>
     }

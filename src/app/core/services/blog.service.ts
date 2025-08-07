@@ -1,10 +1,32 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
+import { Observable } from 'rxjs';
 
-export interface BlogEntry {
+export interface BlogPreviewEntry {
   id: number;
   title: string;
+  createdAt: Date;
+  updatedAt: Date;
   contentPreview: string;
+  author: string;
+  likes: number;
+  comments: number;
+  headerImageUrl: string;
+}
+
+export interface BlogDetailEntry {
+  id: number;
+  title: string;
+  content: string;
+  author: string;
+  likes: number;
+  comments: {
+    id: number;
+    content: string;
+    author: string;
+    createdAt: string;
+    updatedAt: string;
+  }[];
   headerImageUrl: string;
 }
 
@@ -12,7 +34,7 @@ export interface BlogEntry {
   providedIn: 'root',
 })
 export class BlogService {
-  blogEntries = signal<BlogEntry[]>([]);
+  blogEntries = signal<BlogPreviewEntry[]>([]);
   loading = signal(true);
 
   private apiUrl =
@@ -22,7 +44,7 @@ export class BlogService {
 
   loadBlogs() {
     this.loading.set(true);
-    this.http.get<{ data: BlogEntry[] }>(this.apiUrl).subscribe({
+    this.http.get<{ data: BlogPreviewEntry[] }>(this.apiUrl).subscribe({
       next: (res) => {
         console.log('Empfangene Daten:', res.data);
         this.blogEntries.set(res.data);
@@ -33,5 +55,9 @@ export class BlogService {
         this.loading.set(false);
       },
     });
+  }
+
+  getBlogById(id: number): Observable<BlogDetailEntry> {
+    return this.http.get<BlogDetailEntry>(`${this.apiUrl}/${id}`);
   }
 }
