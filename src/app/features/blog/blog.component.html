@@ -17,7 +17,7 @@
           />
           <h2>{{ blog.title }}</h2>
           <p>{{ blog.contentPreview }}</p>
-          <p>{{ blog.createdAt }}</p>
+          <p>{{ blog.createdAt | date:'dd.MM.yyyy HH:mm' }}</p>
         </article>
       </a>
     } @empty {
