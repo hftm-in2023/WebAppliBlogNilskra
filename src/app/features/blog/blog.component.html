@@ -1,7 +1,14 @@
 <h1>Blog Übersicht</h1>
 
-@if (blogService.loading()) {
-  <p>Lade Daten...</p>
+@if (isLoading) {
+  <div class="spinner-wrap">
+    <mat-progress-spinner
+      mode="indeterminate"
+      diameter="48"
+      aria-label="Lade Blogs"
+    >
+    </mat-progress-spinner>
+  </div>
 } @else {
   <div class="blog-container">
     @for (blog of blogs; track blog.id) {
@@ -17,7 +24,6 @@
           />
           <h2>{{ blog.title }}</h2>
           <p>{{ blog.contentPreview }}</p>
-          <p>{{ blog.createdAt | date:'dd.MM.yyyy HH:mm' }}</p>
         </article>
       </a>
     } @empty {
