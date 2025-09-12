@@ -7,18 +7,17 @@ import { MatSelectModule } from '@angular/material/select';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-demo',
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    MatInputModule,
-    MatButtonModule,
-    MatCardModule,
-    MatSelectModule,
-  ],
-  templateUrl: './demo.component.html',
-  styleUrl: './demo.component.scss',
+    selector: 'app-demo',
+    imports: [
+        CommonModule,
+        FormsModule,
+        MatInputModule,
+        MatButtonModule,
+        MatCardModule,
+        MatSelectModule,
+    ],
+    templateUrl: './demo.component.html',
+    styleUrl: './demo.component.scss'
 })
 export class DemoComponent {
   title = 'WebAppliBlogNilskra'
