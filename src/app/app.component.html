@@ -11,6 +11,29 @@
     <button mat-button routerLink="/demo" routerLinkActive="active-link">
       Demo
     </button>
+
+    @if (userData$ | async; as ud) {
+      @if (roleIsUser(ud.userData)) {
+        <a mat-button routerLink="/add" class="btn-primary">+ Neuer Blog</a>
+      }
+    }
+
+    <span class="spacer"></span>
+
+    @if (isAuthenticated$ | async; as auth) {
+      @if (auth.isAuthenticated) {
+        @if (userData$ | async; as ud2) {
+          <span class="username">
+            {{ username(ud2.userData) }}
+          </span>
+        }
+        <button mat-button (click)="logout()">Logout</button>
+      } @else {
+        <button mat-button (click)="login()">Login</button>
+      }
+    } @else {
+      <button mat-button (click)="login()">Login</button>
+    }
   </mat-toolbar>
 
   <div class="content">
