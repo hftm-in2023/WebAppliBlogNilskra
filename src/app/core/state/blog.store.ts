@@ -3,6 +3,9 @@ import { Subject, of } from 'rxjs';
 import { filter, switchMap, map, catchError, tap } from 'rxjs/operators';
 import { BlogApi } from '../services/blog.api';
 import { type BlogPreviewEntry, type BlogDetailEntry } from '../models';
+import { AddBlogService, CreatedBlog } from '../services/add-blog.service';
+import { Router } from '@angular/router';
+import { RouterStore } from './router';
 
 /** ---- Actions ---- */
 interface LoadBlogs {
@@ -52,7 +55,7 @@ interface BlogState {
   error: string | null;
 }
 
-const initialState: BlogState = {
+export const initialState: BlogState = {
   blogs: [],
   selectedId: null,
   selected: null,
@@ -62,6 +65,32 @@ const initialState: BlogState = {
 
 @Injectable({ providedIn: 'root' })
 export class BlogStore {
+  #state = signal<BlogState>(initialState, {
+    debugName: 'BlogStateService:#state',
+  });
+  state = this.#state.asReadonly();
+
+  private blogService = inject(AddBlogService);
+  private router = inject(Router);
+  private loadingState = inject(RouterStore);
+
+  async addBlog(blog: CreatedBlog) {
+    // set error to null (not undefined)
+    this.#state.update(s => ({ ...s, error: null }));
+    try {
+      this.loadingState.setLoadingState(true);
+      await this.blogService.addBlog(blog);
+      this.router.navigate(['/overview']);
+    } catch (error) {
+      this.#state.update(s => ({
+        ...s,
+        error: (error as Error).message ?? 'Unknown error',
+      }));
+    } finally {
+      this.loadingState.setLoadingState(false);
+    }
+  }
+
   private api = inject(BlogApi);
 
   /** Central state as signal */

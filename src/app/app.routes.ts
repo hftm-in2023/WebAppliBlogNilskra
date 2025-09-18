@@ -17,7 +17,6 @@ export const routes: Routes = [
   },
   {
     path: 'add',
-    canMatch: [isAuthenticatedCanMatch],
     loadChildren: () =>
       import('./features/add-blog-page/add-blog.routes').then(
         (m) => m.addBlogRoutes,
