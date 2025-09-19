@@ -1,0 +1,46 @@
+.blog-detail {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+
+  h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  img {
+    width: 100%;
+    max-height: 300px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    margin: 0.5rem 0;
+    font-size: 1rem;
+    line-height: 1.5;
+
+    strong {
+      color: #333;
+    }
+
+    em {
+      color: #888;
+    }
+  }
+}
+
+.back-button {
+  margin-bottom: 1rem;
+}
+
+.not-found {
+  text-align: center;
+  margin-top: 4rem;
+  font-style: italic;
+  color: #a00;
+}

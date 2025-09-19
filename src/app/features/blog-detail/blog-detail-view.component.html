@@ -1,0 +1,40 @@
+<button
+  mat-raised-button
+  color="primary"
+  (click)="back.emit()"
+  class="back-button"
+>
+  ← Zurück zur Übersicht
+</button>
+
+<h1>Blog Detail</h1>
+
+@if (blog()) {
+  <section class="blog-detail">
+    <h2>{{ blog()!.title }}</h2>
+
+    @if (blog()!.headerImageUrl && blog()!.headerImageUrl !== "string") {
+      <img [src]="blog()!.headerImageUrl" alt="Header Image" />
+    } @else {
+      <p><em>Kein Bild vorhanden</em></p>
+    }
+
+    <p><strong>ID:</strong> {{ blog()!.id }}</p>
+    <p>
+      <strong>Erstellt:</strong>
+      {{ blog()!.createdAt | date: "dd.MM.yyyy HH:mm" }}
+    </p>
+    <p>
+      <strong>Zuletzt bearbeitet:</strong>
+      {{ blog()!.updatedAt | date: "dd.MM.yyyy HH:mm" }}
+    </p>
+    <p><strong>Autor:</strong> {{ blog()!.author }}</p>
+    <p><strong>Inhalt:</strong> {{ blog()!.content }}</p>
+    <p><strong>Likes:</strong> {{ blog()!.likes }}</p>
+    <p><strong>Kommentare:</strong> {{ blog()!.comments.length }}</p>
+  </section>
+} @else {
+  <section class="not-found">
+    <p>Blogeintrag nicht gefunden oder nicht geladen.</p>
+  </section>
+}

@@ -1,0 +1,33 @@
+<h1>Blog Übersicht</h1>
+
+@if (isLoading) {
+  <div class="spinner-wrap">
+    <mat-progress-spinner
+      mode="indeterminate"
+      diameter="48"
+      aria-label="Lade Blogs"
+    >
+    </mat-progress-spinner>
+  </div>
+} @else {
+  <div class="blog-container">
+    @for (blog of blogs; track blog.id) {
+      <a [routerLink]="['/detail', blog.id]">
+        <article class="blog-entry">
+          <img
+            [src]="
+              blog.headerImageUrl && blog.headerImageUrl !== 'string'
+                ? blog.headerImageUrl
+                : 'assets/images/platzhalter.png'
+            "
+            alt="Header Image"
+          />
+          <h2>{{ blog.title }}</h2>
+          <p>{{ blog.contentPreview }}</p>
+        </article>
+      </a>
+    } @empty {
+      <p>Keine Blogeinträge vorhanden.</p>
+    }
+  </div>
+}
