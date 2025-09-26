@@ -1,5 +1,5 @@
 <main class="main">
-  <mat-toolbar color="primary">
+  <!-- <mat-toolbar color="primary">
     <button
       mat-button
       routerLink="/"
@@ -12,11 +12,11 @@
       Demo
     </button>
 
-    <!-- @if (userData$ | async; as ud) {
+     @if (userData$ | async; as ud) {
       @if (roleIsUser(ud.userData)) { -->
-        <a mat-button routerLink="/add" class="btn-primary">+ Neuer Blog</a>
-      <!-- }
-    } -->
+  <!-- <a mat-button routerLink="/add" class="btn-primary">+ Neuer Blog</a> -->
+  <!-- }
+    }
 
     <span class="spacer"></span>
 
@@ -34,9 +34,12 @@
     } @else {
       <button mat-button (click)="login()">Login</button>
     }
-  </mat-toolbar>
+  </mat-toolbar> -->
+
+  <app-sidebar></app-sidebar>
 
   <div class="content">
     <router-outlet></router-outlet>
   </div>
+
 </main>

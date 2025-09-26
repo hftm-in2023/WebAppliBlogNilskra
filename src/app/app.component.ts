@@ -6,6 +6,7 @@ import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { KeycloakUserData } from './core/auth/auth.models';
+import { SidebarComponent } from './core/sidebar/sidebar.component';
 
 @Component({
     selector: 'app-root',
@@ -15,6 +16,7 @@ import { KeycloakUserData } from './core/auth/auth.models';
         RouterModule,
         MatToolbarModule,
         MatButtonModule,
+        SidebarComponent
     ],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss',
