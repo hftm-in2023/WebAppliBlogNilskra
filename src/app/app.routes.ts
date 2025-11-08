@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import { DemoComponent } from './features/demo/demo.component';
-import { isAuthenticatedCanMatch } from './core/guards/authenticated.guard';
 
 export const routes: Routes = [
   {
@@ -16,7 +15,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'add',
+    path: 'add-blog',
     loadChildren: () =>
       import('./features/add-blog-page/add-blog.routes').then(
         (m) => m.addBlogRoutes,

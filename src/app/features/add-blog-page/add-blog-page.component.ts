@@ -1,162 +1,111 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { AbstractControl, ValidationErrors } from '@angular/forms';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
+import {
+  FormControl,
+  FormGroup,
+  Validators,
+  AbstractControl,
+  ValidationErrors,
+} from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { BlogStore } from '../../core/state/state';
-import { CreatedBlog } from '../../core/services/add-blog.service';
+import { AddBlogFormComponent } from './add-blog-form.component';
+import { BlogApi } from '../../core/services/blog.api';
+import { BlogStore } from '../../core/state/blog.store';
+import { map, of, switchMap, timer } from 'rxjs';
+
+interface CreatedBlog {
+  title: string;
+  content: string;
+}
 
 @Component({
   selector: 'app-add-blog-page',
-  imports: [
-    FormsModule,           // Grundlegende Formular-Funktionalität
-    ReactiveFormsModule,   // Reactive Forms-Direktiven
-    MatFormFieldModule,    // Material Form Fields
-    MatInputModule,        // Material Input-Komponenten
-    MatButtonModule,       // Material Buttons
-  ],
+  standalone: true,
+  imports: [AddBlogFormComponent],
   template: `
-    <section class="add-blog-placeholder">
-      <h1>Neuen Blogeintrag erstellen</h1>
-      <form [formGroup]="formTyped" (ngSubmit)="onSubmit()">
-    <div class="blog-input">
-        <mat-form-field appearance="fill">
-            <mat-label>Title</mat-label>
-            <input matInput formControlName="title">
-            <mat-error>
-                @if (formTyped.get('title')?.hasError('custom')) {
-                <span>Custom error: Title cannot be 'Test'</span>
-                } @else if (formTyped.get('title')?.hasError('customAsync')) {
-                <span>Custom async error: Title cannot be 'Test Async'</span>
-                }
-            </mat-error>
-        </mat-form-field>
-
-        <mat-form-field appearance="fill">
-            <mat-label>Tell your story...</mat-label>
-            <textarea matInput rows="20" formControlName="content"></textarea>
-            <mat-error>
-                @if (formTyped.get('content')?.hasError('required')) {
-                <span>Content is required</span>
-                } @else if (formTyped.get('content')?.hasError('minlength')) {
-                <span>Content must be at least 50 characters long</span>
-                }
-            </mat-error>
-        </mat-form-field>
-
-        <button type="submit" class="submit-button" mat-raised-button [disabled]="formTyped.invalid" color="primary">
-            Publish blog
-        </button>
-
-        <button type="reset" mat-raised-button color="secondary">
-            Reset
-        </button>
-    </div>
-</form>
-    </section>
+    <app-add-blog-form
+      [form]="form"
+      [errorText]="error()"
+      [saving]="saving()"
+      [submitDisabled]="submitButtonDisabled()"
+      (submitForm)="onSubmit()"
+      (resetForm)="onReset()"
+    />
   `,
-  styles: [
-    `
-      .add-blog-placeholder {
-        padding: 2rem;
-      }
-    `,
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddBlogPageComponent {
+  private destroyRef = inject(DestroyRef);
+  private blogApi = inject(BlogApi);
   private blogStore = inject(BlogStore);
 
-  // State für Template verfügbar machen
-  protected state = this.blogStore.state;
+  readonly saving = this.blogStore.saving;
+  readonly error = this.blogStore.error;
 
-  destroyRef = inject(DestroyRef);
-  submitButtonDisabled = signal<boolean>(false);
+  readonly submitButtonDisabled = signal<boolean>(false);
 
-  constructor() {
-    // Auf Wertänderungen reagieren
-    this.formTyped.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((value) => {
-        console.log('Form value changed:', value);
-        // Hier kannst du auf Änderungen reagieren
-      });
-
-    // Auf Status-Änderungen reagieren
-    this.formTyped.statusChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((status) => {
-        console.log('Form status changed:', status);
-        // Status: VALID, INVALID, PENDING, DISABLED
-      });
-  }
-
-
-  formTyped = new FormGroup<{
+  readonly form = new FormGroup<{
     title: FormControl<string>;
     content: FormControl<string>;
   }>({
-    title: new FormControl<string>('an exciting title', {
+    title: new FormControl<string>('', {
       nonNullable: true,
       validators: [
         Validators.required,
         Validators.minLength(2),
         Validators.pattern('^[A-Z].*'),
-        this.customValidator,
+        this.noTestWordValidator,
       ],
-      asyncValidators: [this.customAsyncValidator],
+      asyncValidators: [this.titleExistsValidator.bind(this)],
+      updateOn: 'blur',
     }),
     content: new FormControl<string>('', {
       nonNullable: true,
-      validators: [
-        Validators.required,
-        Validators.minLength(50),
-      ],
-      asyncValidators: [],
+      validators: [Validators.required, Validators.minLength(50)],
     }),
   });
 
+  noTestWordValidator(control: AbstractControl): ValidationErrors | null {
+    const v = (control.value ?? '').toString().trim().toLowerCase();
+    return v === 'test' ? { custom: true } : null;
+  }
+
+  titleExistsValidator(control: AbstractControl) {
+    const value = (control.value ?? '').toString().trim();
+    if (!value) return of(null);
+    return timer(250).pipe(
+      switchMap(() => this.blogApi.getBlogs()),
+      map((list) =>
+        list.some((e) => e.title?.trim().toLowerCase() === value.toLowerCase())
+          ? { titleTaken: true }
+          : null,
+      ),
+    );
+  }
+
+  constructor() {
+    this.form.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe();
+    this.form.statusChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe();
+  }
+
   async onSubmit() {
-    if (this.formTyped.valid) {
-      this.submitButtonDisabled.set(true);
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+    this.submitButtonDisabled.set(true);
 
-      try {
-        const blogData = this.formTyped.value;
-        console.log('Blog submitted:', blogData);
-
-        await this.blogStore.addBlog(blogData as CreatedBlog);
-
-      } catch (error) {
-        console.error('Error submitting blog:', error);
-        this.submitButtonDisabled.set(false);
-      }
-    } else {
-      console.log('Form is invalid');
+    try {
+      const payload = this.form.getRawValue() as CreatedBlog;
+      await this.blogStore.createBlog(payload);
+    } catch {
+      this.submitButtonDisabled.set(false);
     }
   }
 
-  customValidator(control: AbstractControl): ValidationErrors | null {
-    const value = control.value;
-    if (value && value.toLowerCase() === 'test') {
-      return { custom: true };
-    }
-    return null;
+  onReset() {
+    this.form.reset({ title: '', content: '' });
   }
-
-  customAsyncValidator(control: AbstractControl): Promise<ValidationErrors | null> {
-    return new Promise((resolve) => {
-      // Simuliere Server-Anfrage mit Verzögerung
-      setTimeout(() => {
-        if (control.value === 'Test Async') {
-          resolve({ customAsync: true });
-        } else {
-          resolve(null);
-        }
-      }, 1000); // 1 Sekunde Verzögerung
-    });
-  }
-
 }

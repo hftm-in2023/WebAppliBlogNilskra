@@ -10,6 +10,8 @@ import {
   LogLevel,
   OidcSecurityService,
 } from 'angular-auth-oidc-client';
+import { provideTranslateService } from '@ngx-translate/core';
+import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -39,6 +41,14 @@ export const appConfig: ApplicationConfig = {
             },
           ]),
       },
+    }),
+    provideTranslateService({
+      loader: provideTranslateHttpLoader({
+        prefix: '/i18n/',
+        suffix: '.json',
+      }),
+      fallbackLang: 'en',
+      lang: 'en',
     }),
     {
       provide: 'APP_BOOTSTRAP_LISTENER',

@@ -1,0 +1,120 @@
+<mat-sidenav-container class="sidenav-container">
+  <mat-sidenav
+    #drawer
+    class="sidenav"
+    fixedInViewport
+    [attr.role]="'dialog'"
+    [mode]="'over'"
+    [opened]="false"
+  >
+    <mat-toolbar>Menu</mat-toolbar>
+    <mat-nav-list>
+      <button mat-list-item type="button" routerLink="/">Blog</button>
+      <button mat-list-item type="button" routerLink="/demo">Demo</button>
+      @if (isAuthenticated()) {
+        @if (hasUserRole()) {
+          <button mat-list-item type="button" routerLink="/add-blog">
+            {{ "SIDEBAR.CREATE_NEW_BLOG_BUTTON" | translate }}
+          </button>
+        }
+      }
+      @if (isAuthenticated()) {
+        <button mat-list-item type="button" (click)="logout()">Logout</button>
+        <div class="username-sidebar">
+          <span class="username-mobile">
+            {{ userData().preferred_username }}
+          </span>
+        </div>
+      } @else {
+        <button mat-list-item type="button" (click)="login()">Login</button>
+      }
+      <div class="language-sidebar">
+        <button
+          mat-button
+          (click)="changeLanguage('de')"
+          (keydown)="changeLanguage('de')"
+        >
+          DE
+        </button>
+        |
+        <button
+          mat-button
+          (click)="changeLanguage('en')"
+          (keydown)="changeLanguage('en')"
+        >
+          EN
+        </button>
+      </div>
+    </mat-nav-list>
+  </mat-sidenav>
+  <main class="main">
+    <mat-toolbar color="primary">
+      @if (isHandset()) {
+        <button
+          type="button"
+          aria-label="Toggle sidenav"
+          matIconButton
+          (click)="drawer.toggle()"
+        >
+          <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
+        </button>
+      }
+
+      @if (isHandset() === false) {
+        <button
+          mat-button
+          routerLink="/"
+          routerLinkActive="active-link"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          Blog
+        </button>
+        <button mat-button routerLink="/demo" routerLinkActive="active-link">
+          Demo
+        </button>
+
+        @if (isAuthenticated()) {
+          @if (hasUserRole()) {
+            <button mat-button routerLink="/add-blog" class="btn-primary">
+              {{ "SIDEBAR.CREATE_NEW_BLOG_BUTTON" | translate }}
+            </button>
+          }
+        }
+
+        <div class="login-area">
+          <button
+            mat-button
+            (click)="changeLanguage('de')"
+            (keydown)="changeLanguage('de')"
+          >
+            DE
+          </button>
+          |
+          <button
+            mat-button
+            (click)="changeLanguage('en')"
+            (keydown)="changeLanguage('en')"
+          >
+            EN
+          </button>
+          @if (isAuthenticated()) {
+            <span class="username">
+              {{ userData().preferred_username }}
+            </span>
+            <button mat-button (click)="logout()" matTooltip="Logout">
+              <mat-icon color="primary">logout</mat-icon>
+            </button>
+          } @else {
+            <button mat-button (click)="login()" matTooltip="Login">
+              <mat-icon color="primary">login</mat-icon>
+            </button>
+          }
+        </div>
+      }
+    </mat-toolbar>
+
+    <div class="content">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+</mat-sidenav-container>

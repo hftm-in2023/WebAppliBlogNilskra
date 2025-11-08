@@ -1,0 +1,11 @@
+{
+    "SIDEBAR": {
+        "CREATE_NEW_BLOG_BUTTON": "New Blog"
+    },
+    "BLOG_DETAIL": {
+        "NAVIGATION_BACK_TITLE": "← Back to overview"
+    },
+    "BLOG_OVERVIEW": {
+        "TITLE": "Blog overview"
+    }
+}

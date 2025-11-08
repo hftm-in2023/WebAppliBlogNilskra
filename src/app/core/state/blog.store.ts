@@ -1,11 +1,10 @@
 import { Injectable, computed, signal, inject } from '@angular/core';
-import { Subject, of } from 'rxjs';
+import { Subject, firstValueFrom, of } from 'rxjs';
 import { filter, switchMap, map, catchError, tap } from 'rxjs/operators';
-import { BlogApi } from '../services/blog.api';
+import { BlogApi, CreatedBlog } from '../services/blog.api';
 import { type BlogPreviewEntry, type BlogDetailEntry } from '../models';
-import { AddBlogService, CreatedBlog } from '../services/add-blog.service';
 import { Router } from '@angular/router';
-import { RouterStore } from './router';
+import { AuthStore } from '../auth';
 
 /** ---- Actions ---- */
 interface LoadBlogs {
@@ -55,7 +54,7 @@ interface BlogState {
   error: string | null;
 }
 
-export const initialState: BlogState = {
+const initialState: BlogState = {
   blogs: [],
   selectedId: null,
   selected: null,
@@ -63,43 +62,45 @@ export const initialState: BlogState = {
   error: null,
 };
 
+function toMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (typeof err === 'string') return err;
+  try {
+    return JSON.stringify(err);
+  } catch {
+    return 'Unknown error';
+  }
+}
+
+type TokenLike = string | { accessToken?: string; token?: string } | undefined;
+
+function extractToken(raw: TokenLike): string {
+  if (typeof raw === 'string') return raw.trim();
+  if (raw && typeof raw === 'object') {
+    const t = raw.accessToken ?? raw.token ?? '';
+    return typeof t === 'string' ? t.trim() : '';
+  }
+  return '';
+}
+
 @Injectable({ providedIn: 'root' })
 export class BlogStore {
-  #state = signal<BlogState>(initialState, {
-    debugName: 'BlogStateService:#state',
-  });
-  state = this.#state.asReadonly();
-
-  private blogService = inject(AddBlogService);
-  private router = inject(Router);
-  private loadingState = inject(RouterStore);
-
-  async addBlog(blog: CreatedBlog) {
-    // set error to null (not undefined)
-    this.#state.update(s => ({ ...s, error: null }));
-    try {
-      this.loadingState.setLoadingState(true);
-      await this.blogService.addBlog(blog);
-      this.router.navigate(['/overview']);
-    } catch (error) {
-      this.#state.update(s => ({
-        ...s,
-        error: (error as Error).message ?? 'Unknown error',
-      }));
-    } finally {
-      this.loadingState.setLoadingState(false);
-    }
-  }
-
   private api = inject(BlogApi);
+  private router = inject(Router);
+  readonly #authStore = inject(AuthStore);
+
+  readonly saving = signal<boolean>(false);
+
+  isAuthenticated = this.#authStore.isAuthenticated;
+  token = this.#authStore.token;
 
   /** Central state as signal */
   private _state = signal<BlogState>(initialState);
+  readonly error = signal<string | undefined>(undefined);
 
   /** Selectors */
   blogs = computed(() => this._state().blogs);
   loading = computed(() => this._state().loading);
-  error = computed(() => this._state().error);
   selected = computed(() => this._state().selected);
 
   /** Action stream */
@@ -197,5 +198,34 @@ export class BlogStore {
   }
   selectBlog(id: number) {
     this.dispatch({ type: 'SELECT_BLOG', id });
+  }
+
+  private async ensureAuthenticated() {
+    const isAuth = this.isAuthenticated(); // Signal aufrufen
+    if (!isAuth) {
+      await this.#authStore.login();
+      throw new Error('Nicht authentifiziert');
+    }
+
+    const token = extractToken(this.token());
+    if (!token) {
+      throw new Error('Kein Zugangstoken');
+    }
+  }
+
+  async createBlog(blog: CreatedBlog) {
+    this.error.set(undefined);
+    this.saving.set(true);
+    try {
+      await this.ensureAuthenticated();
+      await firstValueFrom(this.api.createBlog(blog));
+      this.dispatch({ type: 'LOAD_BLOGS' });
+      await this.router.navigate(['/']);
+    } catch (e: unknown) {
+      this.error.set(toMessage(e));
+      throw e;
+    } finally {
+      this.saving.set(false);
+    }
   }
 }
